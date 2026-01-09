@@ -834,7 +834,7 @@
             });
         });
 
-        // Download using cobalt.tools API (free, no API key required)
+        // Download using direct converter services
         async function startDownload() {
             if (!currentVideoId) {
                 showError('Please fetch a video first');
@@ -844,130 +844,30 @@
             downloadBtn.disabled = true;
             downloadBtn.innerHTML = '<div class="spinner"></div><span>Processing...</span>';
             progressContainer.classList.add('active');
-            progressStatus.textContent = 'Connecting to download server...';
-            progressFill.style.width = '20%';
-            progressPercent.textContent = '20%';
+            progressStatus.textContent = 'Opening download service...';
+            progressFill.style.width = '50%';
+            progressPercent.textContent = '50%';
 
-            try {
-                // Use cobalt.tools API for downloading
-                const qualityMap = {
-                    '360': '360',
-                    '480': '480',
-                    '720': '720',
-                    '1080': '1080',
-                    '1440': '1440',
-                    '2160': '2160'
-                };
+            // Quality suffix for URL
+            const qualityText = selectedQuality + 'p';
 
-                const response = await fetch('https://api.cobalt.tools/api/json', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        url: `https://www.youtube.com/watch?v=${currentVideoId}`,
-                        vQuality: qualityMap[selectedQuality] || '720',
-                        filenamePattern: 'basic',
-                        isAudioOnly: false,
-                        disableMetadata: false
-                    })
-                });
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+                progressPercent.textContent = '100%';
+                progressStatus.textContent = '✅ Download page opened! Select ' + qualityText + ' quality.';
 
-                progressFill.style.width = '50%';
-                progressPercent.textContent = '50%';
-                progressStatus.textContent = 'Processing video...';
+                // Use yt1s.com - reliable YouTube downloader
+                const downloadUrl = `https://yt1s.com/en/youtube-to-mp4?q=https://www.youtube.com/watch?v=${currentVideoId}`;
+                window.open(downloadUrl, '_blank');
 
-                const data = await response.json();
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Opened!';
 
-                if (data.status === 'error') {
-                    throw new Error(data.text || 'Download failed');
-                }
-
-                if (data.status === 'redirect' || data.status === 'stream') {
-                    progressFill.style.width = '80%';
-                    progressPercent.textContent = '80%';
-                    progressStatus.textContent = 'Starting download...';
-
-                    // Open download URL
-                    const downloadUrl = data.url;
-                    
-                    setTimeout(() => {
-                        progressFill.style.width = '100%';
-                        progressPercent.textContent = '100%';
-                        progressStatus.textContent = '✅ Download started! Check your downloads folder.';
-                        
-                        // Trigger download
-                        const link = document.createElement('a');
-                        link.href = downloadUrl;
-                        link.target = '_blank';
-                        link.download = `${videoTitle.textContent}.mp4`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-
-                        downloadBtn.disabled = false;
-                        downloadBtn.innerHTML = '<i class="fas fa-check"></i> Complete!';
-                        
-                        setTimeout(() => {
-                            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download MP4';
-                        }, 3000);
-                    }, 500);
-
-                } else if (data.status === 'picker') {
-                    // Multiple formats available - use the first video option
-                    progressFill.style.width = '80%';
-                    progressPercent.textContent = '80%';
-                    progressStatus.textContent = 'Preparing download...';
-
-                    const videoOption = data.picker.find(p => p.type === 'video') || data.picker[0];
-                    
-                    if (videoOption && videoOption.url) {
-                        setTimeout(() => {
-                            progressFill.style.width = '100%';
-                            progressPercent.textContent = '100%';
-                            progressStatus.textContent = '✅ Download started! Check your downloads folder.';
-                            
-                            window.open(videoOption.url, '_blank');
-
-                            downloadBtn.disabled = false;
-                            downloadBtn.innerHTML = '<i class="fas fa-check"></i> Complete!';
-                            
-                            setTimeout(() => {
-                                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download MP4';
-                            }, 3000);
-                        }, 500);
-                    } else {
-                        throw new Error('No download URL available');
-                    }
-                } else {
-                    throw new Error('Unexpected response from server');
-                }
-
-            } catch (error) {
-                console.error('Download error:', error);
-                
-                // Fallback: Open alternative download service
-                progressStatus.textContent = 'Using backup download method...';
-                
                 setTimeout(() => {
-                    // Fallback to y2mate or similar
-                    const fallbackUrl = `https://www.y2mate.com/youtube/${currentVideoId}`;
-                    
-                    progressFill.style.width = '100%';
-                    progressPercent.textContent = '100%';
-                    progressStatus.textContent = '🔗 Opening download page...';
-                    
-                    window.open(fallbackUrl, '_blank');
-                    
-                    downloadBtn.disabled = false;
-                    downloadBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Opened!';
-                    
-                    setTimeout(() => {
-                        downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download MP4';
-                    }, 3000);
-                }, 1000);
-            }
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download MP4';
+                    progressContainer.classList.remove('active');
+                }, 4000);
+            }, 800);
         }
 
         // Event listeners
