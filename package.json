@@ -1,0 +1,17 @@
+{
+  "name": "ytmp4",
+  "version": "1.0.0",
+  "description": "YouTube to MP4 Converter - Download videos up to 4K quality",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "keywords": ["youtube", "downloader", "mp4", "converter"],
+  "author": "",
+  "license": "MIT"
+}
